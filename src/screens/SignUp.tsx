@@ -1,5 +1,5 @@
 
-import { VStack, Image, Text, Center, Heading, ScrollView } from 'native-base';
+import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from 'native-base';
 import { useForm, Controller } from "react-hook-form"
 import LogoSvg from "@assets/logo.svg";
 import BackgroundImg from "@assets/background.png";
@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup";
 import { api } from '@services/api';
+import { AppError } from '@utils/AppError';
 
 type FormDataProps = {
     name: string;
@@ -30,27 +31,31 @@ export function SignUp() {
         resolver: yupResolver(signUpSchema)
     });
     const navigation = useNavigation();
+    const toast = useToast();
 
     const handleBackToLogin = () => {
         navigation.goBack();
     }
 
     const handleSignUp = async ({ email, name, password }: FormDataProps) => {
-        const res = await api.post('users', {
-            name,
-            email,
-            password
-        });
-        // const res = await fetch('http://192.168.15.111:3333/users', {
-        //     method: "POST",
-        //     headers: {
-        //         'Accept': "application/json",
-        //         'Content-Type': "application/json",
-        //     },
-        //     body: JSON.stringify({ name, email, password })
-        // }).then(response => response.json());
+        try {
+            const res = await api.post('users', {
+                name,
+                email,
+                password
+            });
+        } catch (error) {
+            const isAppError = error instanceof AppError;
+            const title = isAppError ? error.message : 'Não foi possível criar a conta. Tente novamente mais tarde'
 
-        console.log(res.data);
+            if (isAppError) {
+                toast.show({
+                    title: title,
+                    placement: "top",
+                    bgColor: "red.500"
+                })
+            }
+        }
     }
 
     return (
