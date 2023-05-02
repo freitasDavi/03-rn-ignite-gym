@@ -8,6 +8,7 @@ import { Button } from '@components/Button';
 import { useNavigation } from '@react-navigation/native';
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup";
+import { api } from '@services/api';
 
 type FormDataProps = {
     name: string;
@@ -34,8 +35,22 @@ export function SignUp() {
         navigation.goBack();
     }
 
-    const handleSignUp = (data: FormDataProps) => {
-        console.log(data);
+    const handleSignUp = async ({ email, name, password }: FormDataProps) => {
+        const res = await api.post('users', {
+            name,
+            email,
+            password
+        });
+        // const res = await fetch('http://192.168.15.111:3333/users', {
+        //     method: "POST",
+        //     headers: {
+        //         'Accept': "application/json",
+        //         'Content-Type': "application/json",
+        //     },
+        //     body: JSON.stringify({ name, email, password })
+        // }).then(response => response.json());
+
+        console.log(res.data);
     }
 
     return (
