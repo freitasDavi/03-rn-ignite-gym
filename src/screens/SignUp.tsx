@@ -10,6 +10,8 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup";
 import { api } from '@services/api';
 import { AppError } from '@utils/AppError';
+import { useState } from 'react';
+import { useAuth } from '@hooks/useAuth';
 
 type FormDataProps = {
     name: string;
@@ -27,10 +29,12 @@ const signUpSchema = yup.object({
 });
 
 export function SignUp() {
+    const [isLoading, setIsLoading] = useState(false);
     const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
         resolver: yupResolver(signUpSchema)
     });
     const navigation = useNavigation();
+    const { signIn } = useAuth();
     const toast = useToast();
 
     const handleBackToLogin = () => {
@@ -39,11 +43,14 @@ export function SignUp() {
 
     const handleSignUp = async ({ email, name, password }: FormDataProps) => {
         try {
-            const res = await api.post('users', {
+            setIsLoading(true);
+            const response = await api.post('users', {
                 name,
                 email,
                 password
             });
+
+            await signIn(email, password);
         } catch (error) {
             const isAppError = error instanceof AppError;
             const title = isAppError ? error.message : 'Não foi possível criar a conta. Tente novamente mais tarde'
@@ -55,6 +62,8 @@ export function SignUp() {
                     bgColor: "red.500"
                 })
             }
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -135,7 +144,11 @@ export function SignUp() {
 
                     />
 
-                    <Button title='Criar e acessar' onPress={handleSubmit(handleSignUp)} />
+                    <Button
+                        title='Criar e acessar'
+                        onPress={handleSubmit(handleSignUp)}
+                        isLoading={isLoading}
+                    />
                 </Center>
                 <Button mt={16} title='Voltar para o login' variant="outline" onPress={handleBackToLogin} />
             </VStack>
