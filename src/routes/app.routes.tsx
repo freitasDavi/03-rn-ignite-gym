@@ -12,7 +12,9 @@ import { Platform } from "react-native"
 
 type AppRoutesProps = {
     home: undefined;
-    exercise: undefined;
+    exercise: {
+        exerciseId: string
+    };
     profile: undefined;
     history: undefined;
 }
