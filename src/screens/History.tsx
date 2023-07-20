@@ -1,6 +1,7 @@
 import { HistoryCard } from "@components/HistoryCard";
 import { Loading } from "@components/Loading";
 import { ScreenHeader } from "@components/ScreenHeader";
+import { HistoryGroupByDayDTO } from "@dtos/HistoryGroupByDayDTO";
 import { useFocusEffect } from "@react-navigation/native";
 import { api } from "@services/api";
 import { AppError } from "@utils/AppError";
@@ -10,16 +11,7 @@ import { useCallback, useState } from "react";
 
 
 export function History() {
-    const [exercises, setExercises] = useState([
-        {
-            title: "26.08.22",
-            data: ["Puxada frontal", "Remada unilateral"]
-        },
-        {
-            title: "27.08.22",
-            data: ["Puxada frontal"]
-        }
-    ]);
+    const [exercises, setExercises] = useState<HistoryGroupByDayDTO[]>([]);
     const toast = useToast();
     const [isLoading, setIsLoading] = useState(true);
 
@@ -28,6 +20,8 @@ export function History() {
             setIsLoading(true);
 
             const response = await api.get("/history");
+
+            setExercises(response.data);
 
         } catch (error) {
             const isAppError = error instanceof AppError;
@@ -53,14 +47,10 @@ export function History() {
             {
                 isLoading ? <Loading />
                     : (
-
-
                         <SectionList
                             sections={exercises}
-                            keyExtractor={item => item}
-                            renderItem={({ item }) => (
-                                <HistoryCard />
-                            )}
+                            keyExtractor={item => item.id}
+                            renderItem={({ item }) => <HistoryCard data={item} />}
                             px={8}
                             renderSectionHeader={({ section }) => (
                                 <Heading color="gray.200" fontSize="md" mt={10} mb={3} fontFamily="heading">
